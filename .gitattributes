@@ -1,0 +1,144 @@
+# ============================================================================
+#  Velocity Rush — .gitattributes
+#  Created at Step 4 (Version Control Hygiene).  See docs/VERSION_CONTROL.md
+#
+#  Two jobs:
+#
+#    1. Pin every text file to LF **in the working tree**, not just in the
+#       repository. This machine has core.autocrlf=true, which would otherwise
+#       hand Unity CRLF files on checkout while Unity writes LF back on save —
+#       a permanent "modified but unchanged" churn. Forcing eol=lf ends it.
+#
+#    2. Route binary assets through Git LFS **before a single one exists**, so
+#       no expensive history migration is ever needed. Assets start arriving at
+#       Step 6.
+#
+#  In .gitattributes, LATER rules win — so the Git LFS block deliberately sits
+#  at the bottom and overrides both the default and the binary block.
+# ============================================================================
+
+# Default: Git sniffs each file and normalises text to LF in the repository.
+* text=auto
+
+# ---------------------------------------------------------------------------
+#  Unity serialized files (YAML) — text, but must stay LF on disk
+# ---------------------------------------------------------------------------
+*.meta                 text eol=lf
+*.unity                text eol=lf
+*.prefab               text eol=lf
+*.asset                text eol=lf
+*.mat                  text eol=lf
+*.anim                 text eol=lf
+*.controller           text eol=lf
+*.overrideController   text eol=lf
+*.physicMaterial       text eol=lf
+*.physicsMaterial2D    text eol=lf
+*.lighting             text eol=lf
+*.lightmap             text eol=lf
+*.giparams             text eol=lf
+*.lightingsettings     text eol=lf
+*.preset               text eol=lf
+*.spriteatlas          text eol=lf
+*.playable             text eol=lf
+*.signal               text eol=lf
+*.brush                text eol=lf
+*.renderTexture        text eol=lf
+*.shadervariants       text eol=lf
+*.cubemap              text eol=lf
+
+# ---------------------------------------------------------------------------
+#  Source and configuration
+# ---------------------------------------------------------------------------
+*.cs                   text eol=lf
+*.asmdef               text eol=lf
+*.asmref               text eol=lf
+*.shader               text eol=lf
+*.hlsl                 text eol=lf
+*.cginc                text eol=lf
+*.compute              text eol=lf
+*.json                 text eol=lf
+*.md                   text eol=lf
+*.txt                  text eol=lf
+*.yml                  text eol=lf
+*.yaml                 text eol=lf
+*.inputactions         text eol=lf
+*.uss                  text eol=lf
+*.uxml                 text eol=lf
+.gitignore             text eol=lf
+.gitattributes         text eol=lf
+
+# ---------------------------------------------------------------------------
+#  Windows IDE artefacts — CRLF is what the Windows tooling expects
+#  (both are gitignored anyway; listed so they behave if ever force-added)
+# ---------------------------------------------------------------------------
+*.sln                  text eol=crlf
+*.slnx                 text eol=crlf
+*.csproj               text eol=crlf
+*.vcxproj              text eol=crlf
+
+# ---------------------------------------------------------------------------
+#  Binary formats Git must never attempt to diff or merge
+#  (extensions already covered by Git LFS below are intentionally omitted)
+# ---------------------------------------------------------------------------
+*.ico                  binary
+*.tiff                 binary
+*.psb                  binary
+*.tga                  binary
+*.ttc                  binary
+*.woff                 binary
+*.woff2                binary
+*.mp4                  binary
+*.mov                  binary
+*.webm                 binary
+*.ogg                  binary
+*.pdf                  binary
+
+# ---------------------------------------------------------------------------
+#  GIT LFS
+#  Every asset format Step 5 can possibly hand back is listed, even though the
+#  repository currently contains none. Adding an attribute later only applies
+#  to new commits — files already stored as plain Git objects stay that way.
+# ---------------------------------------------------------------------------
+#  3D models
+*.fbx                  filter=lfs diff=lfs merge=lfs -text
+*.blend                filter=lfs diff=lfs merge=lfs -text
+*.obj                  filter=lfs diff=lfs merge=lfs -text
+*.dae                  filter=lfs diff=lfs merge=lfs -text
+*.3ds                  filter=lfs diff=lfs merge=lfs -text
+*.max                  filter=lfs diff=lfs merge=lfs -text
+*.ma                   filter=lfs diff=lfs merge=lfs -text
+*.c4d                  filter=lfs diff=lfs merge=lfs -text
+
+#  Textures and images
+*.png                  filter=lfs diff=lfs merge=lfs -text
+*.jpg                  filter=lfs diff=lfs merge=lfs -text
+*.jpeg                 filter=lfs diff=lfs merge=lfs -text
+*.tga                  filter=lfs diff=lfs merge=lfs -text
+*.psd                  filter=lfs diff=lfs merge=lfs -text
+*.tif                  filter=lfs diff=lfs merge=lfs -text
+*.exr                  filter=lfs diff=lfs merge=lfs -text
+*.hdr                  filter=lfs diff=lfs merge=lfs -text
+*.gif                  filter=lfs diff=lfs merge=lfs -text
+*.bmp                  filter=lfs diff=lfs merge=lfs -text
+
+#  Audio
+*.wav                  filter=lfs diff=lfs merge=lfs -text
+*.mp3                  filter=lfs diff=lfs merge=lfs -text
+*.aif                  filter=lfs diff=lfs merge=lfs -text
+*.aiff                 filter=lfs diff=lfs merge=lfs -text
+*.flac                 filter=lfs diff=lfs merge=lfs -text
+
+#  Fonts (TextMeshPro needs them as real binaries)
+*.ttf                  filter=lfs diff=lfs merge=lfs -text
+*.otf                  filter=lfs diff=lfs merge=lfs -text
+
+#  Native plugins and vendor libraries
+*.dll                  filter=lfs diff=lfs merge=lfs -text
+*.so                   filter=lfs diff=lfs merge=lfs -text
+*.dylib                 filter=lfs diff=lfs merge=lfs -text
+*.a                    filter=lfs diff=lfs merge=lfs -text
+
+#  Packages and archives
+*.unitypackage         filter=lfs diff=lfs merge=lfs -text
+*.zip                  filter=lfs diff=lfs merge=lfs -text
+*.7z                   filter=lfs diff=lfs merge=lfs -text
