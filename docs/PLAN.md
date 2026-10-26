@@ -158,6 +158,44 @@
 - **Use kaise:** Naya script banate waqt pehle decide karo kaunsi asmdef. Circular dependency forbidden.
 - **✅ Done When:** Project compile hota hai, koi asmdef cycle nahi, IDE mein IntelliSense theek.
 
+> **✅ STEP 3 COMPLETE** — `commit 8ca2e93 chore(step-3): code standards - asmdefs, naming, Log wrapper`
+>
+> **Amendment — 7 assemblies, not 5.** The plan listed `Core / Vehicle / AI / Race / UI`, but
+> `Scripts/Data/` and `Scripts/Utils/` are script folders too. Unity dumps any script folder without
+> an asmdef into `Assembly-CSharp`, and **no asmdef can reference `Assembly-CSharp`** — so any file
+> dropped into `Data/` or `Utils/` later would have been invisible to the five. Both got assemblies;
+> the folder tree from Step 1 is unchanged.
+>
+> - **`.asmdef` × 7**, strict bottom-up layering:
+>   `Utils → Data → Core → Vehicle → Race → AI`, with `UI` on top of `Race`.
+>   Verified by DFS over the parsed references: **no cycles, every reference resolves**.
+>   Guard rails: `Core` may never reference `Vehicle`/`AI`/`Race`/`UI`; `Race` may never reference `AI`
+>   (Race spawns cars via `Vehicle` types + prefab refs, AI *reads* Race state).
+> - **`Assembly-CSharp` = ABSENT** — every script in the project now lives inside an asmdef.
+> - **`VelocityRush.Utils.Log`** — the plan's *"Debug logs sirf `#if UNITY_EDITOR` ya custom `Log`
+>   wrapper mein"*. `Info`/`Warning` carry `[Conditional("UNITY_EDITOR")]
+>   [Conditional("DEVELOPMENT_BUILD")]`, so release builds delete the call **and** its string
+>   interpolation — stronger than `#if` at the call site, which would still pay for the interpolation.
+>   `Error` stays unconditional on purpose. Optional `Object context` keeps Console click-to-select.
+>   Enforced by scan: **0 direct `Debug.*` calls outside `Log.cs`.**
+> - **Naming split made real:** `m_` = serialized, `_` = transient private, `s_` = static,
+>   `PascalCase` = const/type/method. `GameManager` had two non-serialized fields wrongly using
+>   `m_` (`m_state`, `m_hasStarted`) — renamed `_state`, `_hasStarted`.
+>   Automated checker (walks up through attributes only, stops at blank/declarations): **7 fields, 0 violations.**
+> - `[DisallowMultipleComponent]` moved onto `Singleton<T>` itself so **every** future singleton
+>   inherits the guarantee, not just the two that spelled it out; `GameManager`/`SceneLoader` keep it
+>   explicitly. `[RequireComponent]` deliberately **not** used yet — nothing here is meaningless
+>   alone; it lands with `CarController` (Step 9).
+> - All **6 types** carry a one-line XML `<summary>` stating responsibility.
+> - **`docs/CODING_STANDARDS.md`** added — the living contract (asmdef layering table, naming table,
+>   logging rules, component attributes, architecture rules). Future steps cite it instead of
+>   re-deriving conventions.
+> - **Regression-tested in play mode after the refactor:** 5 logs / **0 errors / 0 warnings**,
+>   `compilationFailed: false`. Stack traces now route through `VelocityRush.Utils.Log:Info (Log.cs:30)`
+>   proving the wrapper is genuinely in use, and the full chain still runs:
+>   `frame 0` → `Boot` → `Boot -> Loading` → `Loading -> MainMenu` → `loaded 'MainMenu'`.
+> - Working tree clean after commit.
+
 ### Step 4 — Version Control Hygiene
 - **Required Assets:** None
 - **Kaam:**
