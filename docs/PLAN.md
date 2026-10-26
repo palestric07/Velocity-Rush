@@ -293,6 +293,42 @@ Original Editor was then relaunched; MCP recovered on a fresh session with
 - **Use kaise:** List banao → budget/dost decide → download → `Assets/_Project/Art/Raw/` mein rakho (import baad mein).
 - **✅ Done When:** `docs/ASSETS.md` complete, har item ka source + license clear, missing list ready.
 
+> **✅ STEP 5 COMPLETE** — `commit 62dfabe chore(step-5): asset sourcing plan - ASSETS.md + source staging`
+>
+> **Amendment — staging dir.** The plan said put downloads in `Assets/_Project/Art/Raw/`, but that
+> would hand Unity **5,466 source files to import** including three redundant formats per model
+> (`.obj` + `.glb` alongside every `.fbx`) and every pack's internal `Documentation/` tree.
+> Downloads now land in **`_SourceAssets/`** at the project root — outside `Assets/`, and
+> gitignored (`git check-ignore` verified). Step 6/7 copy only what ships into `Assets/_Project/`.
+>
+> **What was sourced (all CC0, zero playlist assets, zero Asset Store):**
+>
+> | Category | Result |
+> |---|---|
+> | Cars | Kenney `car-kit` 3.1 — **14 vehicles** + **9 separate wheel meshes** → satisfies *"4 wheels alag objects"* outright |
+> | Track | `city-kit-roads` — **95 FBX** (straights, bends, crossings, bridges, barriers, cones, lights) |
+> | Environment | `city-kit-commercial` 41 + `suburban` 40 + `industrial` 37 + `nature-kit` 329 = **447 FBX** |
+> | PBR | Poly Haven `asphalt_pit_lane` 2K — diffuse/normal/rough/ao |
+> | Lighting | Poly Haven `kloofendal_43d_clear_puresky` HDRI (HDR + EXR) |
+> | Audio | 5 packs — **431 OGG** clips (UI, impacts, digital, music) |
+> | Fonts | `kenney-fonts` — **12 TTF** |
+>
+> **12 Kenney packs + 2 Poly Haven assets, 33.1 MB + 25.5 MB, 5,466 files extracted, 0 failures.**
+>
+> **License verified at the file, not the website:** every one of the 12 archives contains a
+> `License.txt` stating `License: (Creative Commons Zero, CC0)` — read and hash-checked from each
+> extracted pack. `.gitignore` also gained a `/_SourceAssets/` rule in this step.
+>
+> **Two defects caught by verification before anything reached `Assets/`:**
+> 1. Poly Haven served the four asphalt maps as **EXR under a `.jpg` filename** — my loop matched
+>    `jpg` *and* `exr` and the EXR won the overwrite. Caught by a **magic-byte header check**,
+>    deleted, re-fetched pinned to `jpg` only. Final files confirmed `FF D8 FF`.
+> 2. My own draft `ASSETS.md` claimed *407* environment models, *440* audio clips and *~39 MB*.
+>    Re-counted from disk: **447**, **431**, **58.6 MB** — doc corrected to measured values.
+>
+> **Missing list has a decision + owning step for all 7 items** (engine loops, skid loop, VFX
+> textures, logo/thumbnails, 2 HDRIs, 2 road themes, skybox fallback) — **none blocks Steps 6–14.**
+
 ### Step 6 — Car Model Import & Setup
 - **Required Assets:** Car FBX models (Step 5 se)
 - **Kaam:**
