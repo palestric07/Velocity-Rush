@@ -206,7 +206,74 @@
 - **Use kaise:** `git lfs install` → `.gitattributes` edit → commit.
 - **✅ Done When:** `git lfs ls-files` kaam karta hai, fresh clone se project theek khulta hai.
 
-**🚦 PHASE 0 GATE:** Fresh clone → Unity open → compile 0 errors → folder structure correct → 4 commits.
+> **✅ STEP 4 COMPLETE** — `commit 7155889 chore(step-4): version control hygiene - .gitattributes + Git LFS`
+> + `commit 8b8a296 fix(step-4): track empty project folders with .gitkeep`
+>
+> **`.gitignore`** — already the official GitHub `Unity.gitignore`; **verified, no change needed.**
+> Covers `Library/ Temp/ Obj/ Build(s)/ Logs/ UserSettings/ *.csproj *.sln *.slnx *.log
+> *.unitypackage` + Rider/VS caches + memory captures. `Library/` = **0 tracked files**,
+> 111 files tracked, `.git` = 0.2 MB.
+>
+> **Measured first, then wrote:** `core.autocrlf=true`; index was already `i/lf` for **all 111**
+> files; `filter.lfs.*` registered globally; **zero binary assets tracked**.
+>
+> **`.gitattributes`** (new — was absent)
+> - Pins `eol=lf` for Unity YAML + source. `autocrlf=true` would otherwise hand Unity CRLF on
+>   checkout while Unity writes LF back on save → permanent phantom diffs. Windows IDE files
+>   (`*.sln *.slnx *.csproj`) get `eol=crlf`.
+> - Adding it produced **no renormalisation diff** — `git status` showed only `?? .gitattributes`,
+>   confirming the index was already LF.
+> - `git check-attr` spot-checks: text → `text=set,eol=lf`; binaries → `text=unset,filter=lfs`.
+>
+> **Git LFS**
+> - Tracked **before a single binary exists** (assets start at Step 6) → **zero migration cost**.
+>   The plan named 7 formats; the full set is listed because *adding an attribute later only
+>   affects new commits* — files already stored as plain Git objects stay plain forever.
+> - **Verified end-to-end** in a throwaway repo outside the project (history stayed clean):
+>   `git lfs ls-files` → `e2e1e9280c * test.png` (exit 0), staged blob **129 bytes** for a
+>   4096-byte file, pointer `version https://git-lfs.github.com/spec/v1`, object present in
+>   `.git/lfs/objects`, SHA256(working file) == pointer oid. Temp repo deleted afterwards.
+>
+> **🚨 The gate's best catch — 14 orphaned `.meta`**
+> The first fresh clone had **29 folders originally → only 15 in the clone**. Git cannot store
+> empty directories, so all 14 empty folders vanished while their `.meta` files stayed tracked —
+> leaving **14 orphaned metas** that Unity would have deleted, **destroying the folder GUIDs
+> Step 1 preserved**. Fixed with a `.gitkeep` in each empty folder (`commit 8b8a296`).
+> Unity does **not** import dotfiles, so no `.gitkeep.meta` is generated and the existing folder
+> metas remain valid. Verified: after refresh, none of the 14 folder `.meta` showed as modified.
+>
+> **`docs/VERSION_CONTROL.md`** — line-endings policy, LFS table, branch strategy
+> (`main` = stable & always green; `feat/step-N-<name>` from Step 5 onward; Steps 1–4 were
+> bootstrap and went straight to `main`), and the fresh-clone checklist.
+
+### 🚦 PHASE 0 GATE — **PASS**
+
+| Criterion | Evidence |
+|---|---|
+| Fresh clone | `git status` in clone **clean**; files **127 = 127** |
+| Folder structure correct | folders **29 = 29**, missing **0**; tracked `.meta` 53, **orphans 0** (was 14) |
+| Commits | **12** (≥4 required), `main` green |
+| Unity open → compile 0 errors | see below |
+
+Unity-open test was run with the **original Editor closed** so only one instance ever held memory
+(machine peaked at 0.3 GB free). The clone — which has **no `Library/`** — was imported and
+compiled in `-batchmode -nographics -quit`, forcing a full package resolve and a from-scratch
+asset import:
+
+```
+error CS matches        0        warning CS matches      0
+circular / missing-asm  0        orphan / GUID warnings  0
+"Batchmode quit successfully invoked - shutting down!"
+Library rebuilt from scratch      40,646 files
+mode-current-id         Velocity Rush
+VelocityRush.Core.dll   14.5 KB   ✅ produced
+VelocityRush.Utils.dll   5 KB     ✅ produced
+other 5 asmdefs         no DLL    ✅ expected — Unity: "will not be compiled, because it has
+                                          no scripts associated with it"
+```
+
+Original Editor was then relaunched; MCP recovered on a fresh session with
+`compilationFailed: false`, `consoleErrors: 0`, `consoleWarnings: 0`.
 
 ---
 ---
