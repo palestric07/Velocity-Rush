@@ -1,4 +1,5 @@
 using UnityEngine;
+using VelocityRush.Utils;
 
 namespace VelocityRush.Core
 {
@@ -6,6 +7,7 @@ namespace VelocityRush.Core
     /// Base for scene-owned singletons: guarantees one live instance per play session and optional persistence across scene loads.
     /// </summary>
     /// <typeparam name="T">The concrete singleton type deriving from this base.</typeparam>
+    [DisallowMultipleComponent]
     public abstract class Singleton<T> : MonoBehaviour where T : Singleton<T>
     {
         private static T s_instance;
@@ -34,7 +36,7 @@ namespace VelocityRush.Core
         {
             if (s_instance != null && s_instance != this)
             {
-                Debug.LogWarning($"[Singleton<{typeof(T).Name}>] duplicate instance on '{name}' destroyed.", this);
+                Log.Warning($"[Singleton<{typeof(T).Name}>] duplicate instance on '{name}' destroyed.", this);
                 Destroy(gameObject);
                 return;
             }

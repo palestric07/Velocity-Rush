@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using VelocityRush.Utils;
 
 namespace VelocityRush.Core
 {
@@ -61,13 +62,13 @@ namespace VelocityRush.Core
         {
             if (string.IsNullOrWhiteSpace(sceneName))
             {
-                Debug.LogError("[SceneLoader] refused load: scene name is empty.");
+                Log.Error("[SceneLoader] refused load: scene name is empty.");
                 return;
             }
 
             if (IsLoading)
             {
-                Debug.LogWarning($"[SceneLoader] ignored '{sceneName}' because '{PendingScene}' is still loading.");
+                Log.Warning($"[SceneLoader] ignored '{sceneName}' because '{PendingScene}' is still loading.");
                 return;
             }
 
@@ -85,7 +86,7 @@ namespace VelocityRush.Core
             var operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
             if (operation == null)
             {
-                Debug.LogError($"[SceneLoader] LoadSceneAsync('{sceneName}') failed - is the scene listed in Build Settings?");
+                Log.Error($"[SceneLoader] LoadSceneAsync('{sceneName}') failed - is the scene listed in Build Settings?");
                 FinishLoad();
                 yield break;
             }
@@ -110,7 +111,7 @@ namespace VelocityRush.Core
                 yield return null;
 
             FinishLoad();
-            Debug.Log($"[SceneLoader] loaded '{sceneName}'");
+            Log.Info($"[SceneLoader] loaded '{sceneName}'");
         }
 
         private void FinishLoad()

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using VelocityRush.Utils;
 
 namespace VelocityRush.Core
 {
@@ -18,22 +19,22 @@ namespace VelocityRush.Core
         [Tooltip("Kick off the Boot -> Loading -> MainMenu flow on startup.")]
         private bool m_loadMainMenuOnBoot = true;
 
-        private GameState m_state;
-        private bool m_hasStarted;
+        private GameState _state;
+        private bool _hasStarted;
 
         /// <summary>Current top-level game state.</summary>
-        public GameState State => m_state;
+        public GameState State => _state;
 
         /// <summary>True while a race is counting down or running.</summary>
-        public bool IsRaceActive => m_state == GameState.Countdown || m_state == GameState.Racing;
+        public bool IsRaceActive => _state == GameState.Countdown || _state == GameState.Racing;
 
         /// <summary>True while the race is suspended.</summary>
-        public bool IsPaused => m_state == GameState.Paused;
+        public bool IsPaused => _state == GameState.Paused;
 
         protected override void OnSingletonCreated()
         {
-            m_state = m_initialState;
-            Debug.Log($"[GameManager] initial state: {m_state}");
+            _state = m_initialState;
+            Log.Info($"[GameManager] initial state: {_state}");
 
             EventBus.OnSceneLoaded += HandleSceneLoaded;
         }
@@ -45,12 +46,12 @@ namespace VelocityRush.Core
 
         private IEnumerator Start()
         {
-            if (m_hasStarted)
+            if (_hasStarted)
                 yield break;
 
-            m_hasStarted = true;
+            _hasStarted = true;
 
-            if (!m_loadMainMenuOnBoot || m_state != GameState.Boot)
+            if (!m_loadMainMenuOnBoot || _state != GameState.Boot)
                 yield break;
 
             // One frame so every object in the boot scene has finished Awake/OnEnable.
@@ -58,7 +59,7 @@ namespace VelocityRush.Core
 
             if (!SceneLoader.HasInstance)
             {
-                Debug.LogError("[GameManager] SceneLoader missing - cannot leave Boot state.");
+                Log.Error("[GameManager] SceneLoader missing - cannot leave Boot state.");
                 yield break;
             }
 
@@ -71,19 +72,19 @@ namespace VelocityRush.Core
         /// </summary>
         public void SetState(GameState next)
         {
-            if (next == m_state)
+            if (next == _state)
                 return;
 
-            var previous = m_state;
-            m_state = next;
+            var previous = _state;
+            _state = next;
 
-            Debug.Log($"[GameManager] state: {previous} -> {next}");
+            Log.Info($"[GameManager] state: {previous} -> {next}");
             EventBus.RaiseStateChanged(previous, next);
         }
 
         private void HandleSceneLoaded(string sceneName)
         {
-            if (m_state != GameState.Loading)
+            if (_state != GameState.Loading)
                 return;
 
             if (sceneName == SceneLoader.MainMenuSceneName)
@@ -92,7 +93,7 @@ namespace VelocityRush.Core
                 return;
             }
 
-            Debug.LogWarning($"[GameManager] no state mapped for scene '{sceneName}' - remaining in {m_state}.");
+            Log.Warning($"[GameManager] no state mapped for scene '{sceneName}' - remaining in {_state}.");
         }
 
         /// <summary>Clears the cached instance between play sessions (domain reload is disabled).</summary>
@@ -113,7 +114,7 @@ namespace VelocityRush.Core
         {
 #if UNITY_EDITOR
             Application.runInBackground = true;
-            Debug.Log($"[GameManager] editor run-in-background enabled at frame {Time.frameCount}");
+            Log.Info($"[GameManager] editor run-in-background enabled at frame {Time.frameCount}");
 #endif
         }
 

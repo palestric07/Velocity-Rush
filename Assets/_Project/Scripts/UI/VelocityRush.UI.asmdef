@@ -1,0 +1,20 @@
+{
+    "name": "VelocityRush.UI",
+    "rootNamespace": "VelocityRush.UI",
+    "references": [
+        "VelocityRush.Utils",
+        "VelocityRush.Data",
+        "VelocityRush.Core",
+        "VelocityRush.Vehicle",
+        "VelocityRush.Race"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

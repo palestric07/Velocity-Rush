@@ -1,0 +1,19 @@
+{
+    "name": "VelocityRush.Race",
+    "rootNamespace": "VelocityRush.Race",
+    "references": [
+        "VelocityRush.Utils",
+        "VelocityRush.Data",
+        "VelocityRush.Core",
+        "VelocityRush.Vehicle"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
