@@ -81,10 +81,14 @@
 > - Verified: **0 missing metas**, console ground truth **0 errors / 0 warnings / `compilationFailed: false`**,
 >   hierarchy intact (`Main Camera` + `UniversalAdditionalCameraData`, `Directional Light` +
 >   `UniversalAdditionalLightData`, `Global Volume` + `Volume`), scene renders correctly (no magenta)
-> - **Open item:** empty `Assets/Screenshots/` folder (+ its `.meta`) created accidentally by the
->   `scene_view` screenshot path is held by an external process lock (not Unity — control folder
->   create/delete works). Needs the locker released (likely Explorer window / Windows Search /
->   preview tool), then delete both and commit.
+> - **Cleaned up:** an empty `Assets/Screenshots/` folder created accidentally by the
+>   `scene_view` screenshot `save_path` was left locked. Root cause found: the Unity CLI MCP
+>   **bridge process** (`unity.exe mcp`) spawned at that moment kept an open directory handle.
+>   Explorer / Windows Search / Unity's own asset watcher were all ruled out by controlled tests.
+>   Killed the orphaned bridge PID and deleted folder + `.meta`. **Lesson:** never point
+>   `scene_view` `save_path` inside `Assets/` — it gets imported as a texture and spawns MCP
+>   handles; use a Temp path instead.
+> - Working tree clean, `Assets/` root contains only `_Project/` + Unity template files.
 
 ### Step 2 — Core Scaffolding (GameManager + Scene Flow + EventBus)
 - **Required Assets:** None
