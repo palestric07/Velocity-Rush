@@ -305,7 +305,7 @@ Original Editor was then relaunched; MCP recovered on a fresh session with
 >
 > | Category | Result |
 > |---|---|
-> | Cars | Kenney `car-kit` 3.1 — **14 vehicles** + **9 separate wheel meshes** → satisfies *"4 wheels alag objects"* outright |
+> | Cars | **Revised in Step 6:** Kenney `car-kit` 3.1 (14 vehicles + 9 wheel meshes) was staged, then rejected for the driving roster and replaced by **6 Grab3D CC0 cars with PBR** — see `ASSETS.md` §3.2. `car-kit` stays staged as a possible AI-traffic source |
 > | Track | `city-kit-roads` — **95 FBX** (straights, bends, crossings, bridges, barriers, cones, lights) |
 > | Environment | `city-kit-commercial` 41 + `suburban` 40 + `industrial` 37 + `nature-kit` 329 = **447 FBX** |
 > | PBR | Poly Haven `asphalt_pit_lane` 2K — diffuse/normal/rough/ao |
@@ -329,24 +329,62 @@ Original Editor was then relaunched; MCP recovered on a fresh session with
 > **Missing list has a decision + owning step for all 7 items** (engine loops, skid loop, VFX
 > textures, logo/thumbnails, 2 HDRIs, 2 road themes, skybox fallback) — **none blocks Steps 6–14.**
 
-### Step 6 — Car Model Import & Setup
-- **Required Assets:** Car FBX models (Step 5 se)
-- **Kaam:**
-  - Import settings: **Scale 1**, Mesh Compression Off (ya Medium), Read/Write OFF, Generate Colliders OFF (collider WheelCollider se aayega), Optimize Game Objects ON.
-  - Wheel bones/objects ko `Wheel_FL, Wheel_FR, Wheel_RL, Wheel_RR` naam do.
-  - Prefab banao: `Prefabs/Cars/Car_<Name>.prefab` with **empty child rig**:
+### Step 6 — Car Model Import & Setup ✅ **COMPLETE**
+> **Scope changed mid-step (user decision):** the first pass used Kenney `car-kit` (committed at
+> `edbf140`) and was rejected as too toy-like — *"ye to farigh hain"*. Those 26 `Assets/` entries
+> were deleted and the roster rebuilt on **Grab3D** models: six realistic CC0 cars with full PBR.
+> Kenney originals remain recoverable in `_SourceAssets/car-kit.zip` and at `edbf140`.
+
+- **Required Assets:** 6 Grab3D FBX + 34 PBR textures (Step 5 addendum, licensed CC0 per car)
+- **Kaam kiya:**
+  - **Import settings** on all 6 FBX: scale 1, `useFileScale` on, Mesh Compression **Off**,
+    Read/Write **Off**, Generate Colliders **Off**, Animation type **None**, `materialImportMode`
+    **None** (materials authored by us), cameras/lights/blendshapes off.
+  - **Axis:** the source is Y-up with *"front faces −Y"*. `bakeAxisConversion` was tried and
+    **reverted** — it pushed the nose to −Z (backwards). Instead the FBX root's −90° X rotation was
+    baked into the first level of the hierarchy while building the prefab, leaving an identity root
+    with **front = +Z, up = +Y, ground at Y = 0**.
+  - **Textures:** 34/34 set to 2048 max, mips on, aniso 4; `_normal` → *Normal map* type with
+    sRGB off, base colour/tire colour → sRGB on, metallic/roughness → sRGB off.
+  - **Materials:** 18 × URP **Universal Render Pipeline/Lit** — `M_<Car>_Body`, `M_<Car>_Windows`,
+    `M_<Car>_Tire` per car, each with `_BaseMap` + `_BumpMap` and tuned scalar metallic/smoothness.
+  - **Prefab rig**, built programmatically from the model asset (no hand-dragging), per car:
     ```
-    CarRoot (Transform)  ← yahan Rigidbody aayega
-      ├─ Body (mesh)
-      ├─ Wheels/ (4 visual wheel empties)
-      ├─ Colliders/ (headlight/box collider optional)
-      ├─ VFX/ (smoke, skid points, boost)
-      ├─ Audio/ (engine, skid)
-      └─ CameraAnchor
+    Car_<Name> (identity transform — Rigidbody lands here in Step 9)
+      ├─ Body/          Body_Mesh · Windows_Mesh · [SteeringWheel_Mesh]
+      ├─ Wheels/        Wheel_FL/FR/RL/RR   ← empty node at the hub, identity rotation
+      │                     └─ Wheel_*_Mesh  ← mesh child, carries the model's own axis rotation
+      ├─ Colliders/     Chassis (BoxCollider sized to the measured bounds)
+      ├─ VFX/
+      ├─ Audio/
+      └─ CameraAnchor   at 55 % of body height
     ```
-  - Material: URP **Universal Render Pipeline/Lit**, metallic/smoothness set karo, texture atlas prefer.
-- **Use kaise:** Model drag → prefab stage mein rig banao → 6 cars ke liye repeat (template prefab se duplicate).
-- **✅ Done When:** 6 car prefabs ready, scene mein drag karke dikhte hain, scale correct (inspector mein size meter mein).
+    The split `Wheel_*` node (steer about local Y) from its mesh child (spin about local X) is what
+    makes Step 9's WheelCollider drive-back straightforward.
+- **✅ Done When — measured, not eyeballed:** `**372 checks PASS / 0 FAIL, console 0 errors / 0 warnings**`
+  covering, for each of the 6 prefabs: identity root, the exact 6 top-level groups, mesh-child
+  naming, front wheels at +Z and rear at −Z, front-left at −X, hub height 0.18–0.65 m, ground plane
+  at Y = 0, wheelbase and track inside plausible ranges, chassis box, camera anchor height,
+  URP/Lit shader on every renderer, base+normal texture present on every renderer, metre-scale
+  bounds, 10k–25k verts, and a **frustum test** (camera at `(5, 3.2, −6.5)` → every renderer visible).
+
+**Defects caught during this step (all in my own tooling, none in the assets):**
+1. A deletion script omitted the `.fbx` extension — it removed 10 `.meta` files but left all 10
+   Kenney models on disk. Caught by diffing `git status` against the intended result, then fixed
+   (20 files removed, folder re-checked: 6 FBX + 34 textures, no leftovers).
+2. Two verification assertions were written too narrowly and flagged correct data: dragster
+   wheelbase 4.49 m (it is a 5.90 m car) and dragster front track 0.68 m (its front end is
+   motorcycle-narrow). Ranges widened — the assets were right, the test was wrong.
+3. `bakeAxisConversion = true` looked correct on bounds but silently reversed the nose to −Z.
+   Caught by checking the *named* front wheels rather than the bounding box.
+
+**Note:** `Settings/Mobile_RPAsset.asset` changed in this step — URP migrated it
+`k_AssetVersion 12 → 13` on refresh (adds `m_ReflectionProbeAtlas`, `m_AllowPostProcessAlphaOutput`,
+drops `m_UseLegacyLightmaps`). Automatic package migration, committed as-is.
+
+**Open (not blocking):** packed metallic+smoothness maps (`ASSETS.md` §5 item 8); RCC vs custom
+controller decision (`ASSETS.md` §5 item 9) — if RCC is adopted, Step 9's rig is replaced by RCC's
+components but this prefab hierarchy survives as the visual root.
 
 ### Step 7 — Track & Environment Asset Import
 - **Required Assets:** Road kit, props, terrain textures
