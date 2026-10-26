@@ -101,6 +101,52 @@
 - **Use kaise:** Koi bhi system GameManager ko directly call NAHI karega — sirf EventBus se. Isse steps 35+ mein judna aasan hoga.
 - **✅ Done When:** Empty scene se `MainMenu` load hota hai, console mein state transitions print hote hain, no null refs.
 
+> **✅ STEP 2 COMPLETE** — `commit 46ed0a9 chore(step-2): core scaffolding (GameManager + scene flow + EventBus)`
+> - **5 files** in `Assets/_Project/Scripts/Core/`: `Singleton.cs`, `GameState.cs`, `EventBus.cs`,
+>   `GameManager.cs`, `SceneLoader.cs` (+ `.meta`)
+> - `Singleton<T>` — one live instance per session, `Instance` / `HasInstance` / `EnsureExists` /
+>   `ClearInstance`, `m_persistAcrossScenes` → `DontDestroyOnLoad` (optional, as planned). Duplicate
+>   instances self-destruct. `OnDestroy` uses `ReferenceEquals` (Unity's `==` already reads null there).
+> - `GameState` — all 8 planned members: `Boot, MainMenu, Garage, Loading, Countdown, Racing, Paused, Finished`
+> - `EventBus` — static `Action` events + null-safe `Raise*` helpers (no `UnityEvent` wrappers):
+>   `OnStateChanged`, `OnRaceStarted`, `OnLapCompleted`, `OnCarSelected`, `OnCountdownTick`,
+>   `OnSceneLoaded`
+> - `SceneLoader` — `LoadSceneAsync` with **`m_activationBudget = 0.1f`** (Unity only streams to 0.9,
+>   the last 10% is activation — the plan's "10% budget"), `m_minimumLoadSeconds` anti-flash,
+>   `IsLoading` / `Progress` / `PendingScene`, refuses loads while one is in flight
+> - `GameManager` — `[DefaultExecutionOrder(-1000)]`, boot flow `Boot → Loading → MainMenu`,
+>   scene→state mapping arrives through `EventBus.OnSceneLoaded` (future systems still never call
+>   `GameManager` directly — that contract holds)
+> - **Empty scene works:** `GameManager.Bootstrap()` (`RuntimeInitializeOnLoadMethod.AfterSceneLoad`)
+>   spawns a `[Core]` host with `SceneLoader` + `GameManager`, so pressing Play in a zero-setup scene
+>   boots straight into `MainMenu`
+> - `Assets/_Project/Scenes/Menus/MainMenu.unity` created (guid `b402708be0693204f95398c40a3be9ad`)
+>   and added to Build Settings at index 1; `SampleScene` path/GUID untouched
+> - **Verified end-to-end in play mode, no manual intervention** — 5 logs / **0 errors / 0 warnings**:
+>   `run-in-background enabled at frame 0` → `initial state: Boot` → `state: Boot -> Loading` →
+>   `state: Loading -> MainMenu` → `loaded 'MainMenu'`. The middle transition's stack proves the whole
+>   decoupling chain: `SceneManager.Internal_SceneLoaded` → `SceneLoader.HandleSceneLoaded:126` →
+>   `EventBus.RaiseSceneLoaded:61` → `GameManager.HandleSceneLoaded:91` → `SetState:80`.
+>   End state: `gmState=MainMenu activeScene=MainMenu sceneCount=1 isLoading=False progress=1`.
+>   Console ground truth before/after: `compilationFailed: false`, 0 errors, 0 warnings.
+> - **Two real gotchas found and fixed:**
+>   1. **Editor background freeze.** With `PlayerSettings.runInBackground=false`, Unity froze the play
+>      loop at **frame 2** whenever the Editor was unfocused — every coroutine and async load stalled
+>      (`frameCount` and `Time.unscaledTime` frozen, only `realtimeSinceStartup` moved). This is *not*
+>      a code bug but it would silently break **every future automated play test**, so it is fixed now:
+>      `ConfigureEditorBackgroundRun()` at `SubsystemRegistration` sets `Application.runInBackground = true`
+>      under `#if UNITY_EDITOR` and logs its `frameCount` — measured **frame 0**, so it always wins the
+>      race against the frame-2 freeze. Proven by `runInBackground` reading **False outside play** and
+>      **True inside play** (i.e. our code, not a persisted project setting).
+>   2. **`EditorBuildSettings` never reached disk.** `EditorBuildSettings.scenes = …` and MCP
+>      `add_to_build` both reported `count: 2` in memory while the file on disk still held only 1 scene
+>      — it would have vanished on the next domain reload/quit. Fixed by reassigning the array plus
+>      `AssetDatabase.SaveAssets()`, then **re-reading the file** (diff shows only the 3 added lines).
+>      **Lesson: after touching Build Settings, always verify the file on disk, not just the API.**
+> - Static-state safety under disabled domain reload: `EventBus` and `Singleton` both reset at
+>   `SubsystemRegistration`, so no stale subscriptions leak between play sessions.
+> - Working tree clean after both commits.
+
 ### Step 3 — Code Standards + Assembly Definitions
 - **Required Assets:** None
 - **Kaam:**
