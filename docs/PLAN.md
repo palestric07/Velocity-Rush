@@ -70,6 +70,22 @@
 - **Use kaise:** Sab kuch `_Project/` ke andar. Bahar sirf Unity ke default folders.
 - **✅ Done When:** Folder tree bana, Unity mein koi pink/missing reference nahi, `git status` clean after commit.
 
+> **✅ STEP 1 COMPLETE** — `commit e967c47 chore(step-1): project folder architecture`
+> - 25 folders created under `Assets/_Project/` (Art{Models,Textures,Materials,VFX,Animations},
+>   Audio{Music,SFX}, Fonts, Input, Prefabs{Cars,Track,UI,Effects}, Scenes{Menus,Tracks},
+>   Scripts{Core,Vehicle,AI,Race,UI,Data,Utils}, Settings, Texts)
+> - Moves: `Scenes/`, `Settings/`, `InputSystem_Actions.inputactions` → `_Project/` **with .meta**
+>   (git rename detection reports `R` + **0 content changes** = GUIDs preserved; Input actions GUID
+>   `052faaac586de48259a63d0c4782560b` unchanged, SampleScene GUID `99c9720ab356a0642a771bea13969a05` unchanged)
+> - `EditorBuildSettings` scene path repaired → `Assets/_Project/Scenes/SampleScene.unity` (guid + path both correct on disk)
+> - Verified: **0 missing metas**, console ground truth **0 errors / 0 warnings / `compilationFailed: false`**,
+>   hierarchy intact (`Main Camera` + `UniversalAdditionalCameraData`, `Directional Light` +
+>   `UniversalAdditionalLightData`, `Global Volume` + `Volume`), scene renders correctly (no magenta)
+> - **Open item:** empty `Assets/Screenshots/` folder (+ its `.meta`) created accidentally by the
+>   `scene_view` screenshot path is held by an external process lock (not Unity — control folder
+>   create/delete works). Needs the locker released (likely Explorer window / Windows Search /
+>   preview tool), then delete both and commit.
+
 ### Step 2 — Core Scaffolding (GameManager + Scene Flow + EventBus)
 - **Required Assets:** None
 - **Kaam:**
