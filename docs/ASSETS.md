@@ -9,7 +9,7 @@ here with its source, license and destination. Nothing enters `Assets/` without 
 
 | Rule | Why |
 |---|---|
-| **Free / CC0 only** — no paid assets, no pirated assets | Legal safety. **RCC (paid controller):** a pirated copy was refused earlier. Three `.unitypackage` files now sit on the desktop and the user reports having bought it — a loose package cannot prove a licence, so RCC stays **unused** until it shows up as *owned* in Unity Package Manager → My Assets (see §3.4) |
+| **Free / CC0 only** — no paid assets, no pirated assets | Legal safety. **RCC (paid controller):** a pirated copy was refused earlier. The three `.unitypackage` versions on the desktop were then explained by the user as supplied by the studio that commissioned a game from them. Provenance recorded as stated — see §3.4 |
 | **Zero assets from the WITS Gaming playlist** | Its description links go to Google Drive + Patreon behind a paywall and carry no clear license. The playlist is *genre reference only* — we read the titles, never the descriptions |
 | **Unity Asset Store not used** | Its licence is the Unity Asset Store EULA, not CC0, and free-store packs are inconsistent quality. Rejected deliberately, not overlooked |
 | **One family per domain, never mixed inside a domain** | The world (track, buildings, nature) is entirely Kenney `city-kit`/`nature-kit` — one low-poly family, so nothing in the scenery clashes. Cars were originally Kenney too, but the low-poly toy look was rejected for the driving roster, so driveable vehicles now come from a second CC0 source (Grab3D, realistic PBR). Mixing vendors *within* a domain is what produces the "assembled, not designed" look — this split is domain-level and deliberate |
@@ -137,7 +137,7 @@ caught by a header check before ever reaching `Assets/`. They are now genuine `F
 | Real Asset Store "free" car packs | **Rejected** — Unity EULA, not CC0; inconsistent quality. They also require an account login, which the sourcing policy avoids |
 | Branded car models (BMW, Ferrari …) | **Rejected** — trademark risk; this project uses generic vehicles only |
 | Google Drive folder "Assets Mobile Car Racing 2024" | **Rejected** — it repackages paid store assets (`RaceTrack Pack 01` by HereVR ≈ $60, `Garage` ≈ Pit Garage Pack ≈ $50) with no licence. Same piracy line the project already drew |
-| RCC (Racing Car Controller) | **Deferred, not used.** A pirated copy was refused earlier; the user now reports an official purchase and three `.unitypackage` versions sit on the desktop. Ownership cannot be verified from loose files, so nothing has been imported. It stays out until it appears as *owned* in Package Manager → My Assets. Architecturally it would replace ~12 custom-controller steps, so this is a scheduled decision, not a silent one |
+| RCC (Racing Car Controller) | **Available, not yet imported.** A pirated copy was refused earlier; the user then explained that the three desktop `.unitypackage` versions (v3.3 / v3.70 / v4.4.0) were supplied by the studio that commissioned a game from them. Provenance recorded as stated. Note that a loose package does not itself evidence a licence — if the asset is attached to a Unity account this project can use, Package Manager → My Assets is the clean import path. Architecturally it would replace ~12 custom-controller steps (9–20), so RCC-vs-custom is a **scheduled decision at Step 9**, not an assumption either way |
 | ambientCG asphalt | Kept as backup only — Poly Haven's `pit_lane` suits racing better |
 
 ---
@@ -169,7 +169,7 @@ budget, with headroom for Step 9's WheelColliders.
 | 6 | **2 road themes** | Decide at Step 20 once the waypoint spine exists — likely `city-kit-commercial` + industrial asphalt rather than more downloads | 20 |
 | 7 | **Skybox textures** (non-HDRI fallback for mobile) | Bake from the HDRI if mobile fill-rate demands it; hold until profiling | 22 |
 | 8 | **Packed metallic+smoothness maps** for the 6 cars | Pack Grab3D's two greyscale JPEGs into one RGBA PNG so URP Lit can use the real roughness; until then materials use tuned scalars | 8 |
-| 9 | **RCC vs custom controller** | Verify ownership in Package Manager → My Assets, then decide. Blocks nothing until Step 9 | 9 |
+| 9 | **RCC vs custom controller** | RCC is on hand (supplied by the commissioning studio, per the user). Decide at Step 9 whether to adopt it — it would replace ~12 custom-controller steps (9–20), but the Step 6 prefab hierarchy survives either way as the visual root. Blocks nothing before then | 9 |
 
 **No item on this list blocks Steps 6–8.**
 
